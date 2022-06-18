@@ -1,0 +1,105 @@
+﻿@{
+    bool ketThuc = ViewBag.KetThuc;
+    //bảng dữ liệu
+    System.Data.DataTable dtCauHoi = ViewBag.CauHoi;
+    System.Data.DataTable dtDapAn = ViewBag.DapAn;
+}
+<div class="card-body tblChiTiet" style="overflow: auto">
+    @{
+        if (dtCauHoi != null && dtCauHoi.Rows.Count > 0)
+        {
+            int dem = 1;
+            foreach (System.Data.DataRow rowCauHoi in dtCauHoi.Rows)
+            {
+                bool lamDung = true, khongChon = true;
+                string dapAnDung = "";
+                <div class="card" style="margin-bottom: 10px;">
+                    <div class="card-body">
+                        <div class="cauHoiBL p-1" data-id="@rowCauHoi["ID"]" data-nhieuCauTraLoi="@rowCauHoi["NHIEUCAUTRALOI"]">
+                            <div class="row">
+                                <h5>Câu hỏi số @dem:</h5>
+                            </div>
+                            <div class="row">
+                                <h6>@Html.Raw(rowCauHoi["NAME"])</h6>
+                            </div>
+                            <div>
+                                @{
+                                    if (dtDapAn != null && dtDapAn.Rows.Count > 0)
+                                    {
+                                        int demDapAn = 65;
+                                        System.Data.DataRow[] rows = dtDapAn.Select("DCAUHOIID='" + rowCauHoi["ID"] + "'", "THUTU ASC");
+                                        foreach (System.Data.DataRow rowTraLoi in rows)
+                                        {
+                                            bool laCauTraLoi = No1Lib.Utils.ConvertTo.Int(rowTraLoi["LACAUTRALOI"]) > 0;
+                                            bool laDapAnDung = No1Lib.Utils.ConvertTo.Int(rowTraLoi["LADAPANDUNG"]) > 0;
+                                            char charTmp = (char)demDapAn;
+                                            string className = "";
+                                            if (laCauTraLoi)
+                                            {
+                                                className = "itemActive";
+                                            }
+
+                                            if (ketThuc && laDapAnDung && !laCauTraLoi)
+                                            {
+                                                lamDung = false;
+                                            }
+
+                                            if (laCauTraLoi)
+                                            {
+                                                khongChon = false;
+                                            }
+
+                                            if (ketThuc && laDapAnDung)
+                                            {
+                                                className = "itemWrong";
+
+                                                if (dapAnDung.Length > 0)
+                                                {
+                                                    dapAnDung += ", ";
+                                                }
+
+                                                dapAnDung += charTmp;
+                                            }
+
+                                            <div class="row" data-id="@rowTraLoi["ID"]">
+                                                <div class="itemChonDapAn @className">@charTmp</div>
+                                                <div style="line-height: 40px; display: contents;">@rowTraLoi["NOIDUNG"]</div>
+                                            </div>
+                                            demDapAn++;
+                                        }
+                                    }
+                                }
+                            </div>
+
+                            @{
+                                if (!lamDung && ketThuc)
+                                {
+                                    string temp = "wrong";
+                                    if (khongChon)
+                                    {
+                                        temp = "empty";
+                                    }
+                                    <p class="@temp">
+                                        <i class="fa fa-times" style="margin-right: 10px; margin-left: 5px; color: red;"></i>
+                                        <b style="color: red;">Sai - </b>
+                                        <b style="color: #8ca752 !important;">Đáp án đúng: @dapAnDung</b>
+                                    </p>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                dem++;
+            }
+        }
+
+        if (!ketThuc && ViewBag.error == null)
+        {
+            <div class="row" style="justify-content: center; margin-bottom: 10px;">
+                <div class="btn btn-success btnNopBai">
+                    Nộp bài thi
+                </div>
+            </div>
+        }
+    }
+</div>

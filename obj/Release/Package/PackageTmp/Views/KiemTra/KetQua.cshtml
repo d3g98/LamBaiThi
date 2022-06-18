@@ -1,0 +1,102 @@
+﻿@model System.Data.DataRow
+@{
+    ViewBag.Title = "KetQua";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    //bảng dữ liệu
+    System.Data.DataTable dtCauHoi = ViewBag.CauHoi;
+    System.Data.DataTable dtDapAn = ViewBag.DapAn;
+}
+@{
+    if (Model != null)
+    {
+        int soCauChuaChon = No1Lib.Utils.ConvertTo.Int(Model["SOCAU"]) - No1Lib.Utils.ConvertTo.Int(Model["SOCAUDALAM"]);
+        int soCauTLSai = No1Lib.Utils.ConvertTo.Int(Model["SOCAU"]) - soCauChuaChon - No1Lib.Utils.ConvertTo.Int(Model["SOCAUTRALOIDUNG"]);
+        decimal diem = No1Lib.Utils.ConvertTo.Decimal(Model["DIEM"]);
+
+        <div class="row justify-content-center" style="margin-top: 10px; color: #428BCA">
+            <h5>CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH ĐỀ THI ONLINE - @Model["NAME"].ToString().ToUpper()</h5>
+        </div>
+
+        <div class="row" style="padding: 20px;">
+            <div class="card w-100">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3 float-left">
+                            <div class="cirlce p-3 rounded-circle">
+                                <div class="diem-content">
+                                    <h6>ĐIỂM SỐ</h6>
+                                    <h1>@Math.Round(diem, 2)</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-9 float-right">
+                            <table>
+                                <tr>
+                                    <td colspan="2"><h5>KẾT QUẢ THI: @Model["NAME"].ToString().ToUpper()</h5></td>
+                                </tr>
+                                <tr>
+                                    <td>Số câu đã làm</td>
+                                    <td><h6>@Model["SOCAUDALAM"]</h6></td>
+                                </tr>
+                                <tr>
+                                    <td>Số câu trả lời đúng</td>
+                                    <td><h6>@Model["SOCAUTRALOIDUNG"]</h6></td>
+                                </tr>
+                            </table>
+
+                            <p style="margin-top: 15px;margin-bottom: 0" class="sum-result">
+                                <span class="aw_correct"></span> Đúng: <b>@Model["SOCAUTRALOIDUNG"]</b>
+                                <span class="aw_not_correct"></span> Sai: <b>@soCauTLSai</b>
+                                <span class=""></span> Chưa chọn: <b>@soCauChuaChon</b>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted bg-white tongHopCauHoi">
+                    @{
+                        if (dtCauHoi != null && dtCauHoi.Rows.Count > 0)
+                        {
+                            int dem = 1;
+                            foreach (System.Data.DataRow row in dtCauHoi.Rows)
+                            {
+                                <div class="itemChonDapAn" data-id="@row["ID"]" style="color: white;">
+                                    @{ if (dem < 10)
+                                        {<text>0</text>}<text>@dem</text>}
+                                </div>
+                                dem++;
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @{
+                Html.RenderAction("RenderCardBodyBailam", new { dtCauHoi = dtCauHoi, dtDapAn = dtDapAn, ketThuc = true, error = ViewBag.error });
+            }
+        </div>
+    }
+}
+@Scripts.Render("~/bundles/jquery")
+<script>
+    $('.itemChonDapAn').click(function () {
+        $('html,body').animate({ scrollTop: $(".cauHoiBL[data-id='" + $(this).attr("data-id") + "']").offset().top }, 500);
+    });
+
+    //filter color
+    $(".tongHopCauHoi").find(".itemChonDapAn").each(function (index, element) {
+        let dataid = $(element).attr("data-id");
+        let temp = $(".cauHoiBL[data-id='" + dataid + "']");
+        let wrong = temp.find(".wrong").length > 0;
+        let empty = temp.find(".empty").length > 0;
+        if (wrong || empty) {
+            if (wrong) {
+                $(element).css("background-color", "darkorange");
+            }
+        }
+        else {
+            $(element).css("background-color", "#a4c263");
+        }
+    });
+</script>

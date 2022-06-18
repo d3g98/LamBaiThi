@@ -1,0 +1,77 @@
+﻿@model System.Data.DataRow
+@{
+    ViewBag.Title = "Nội quy phòng thi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    if (ViewBag.error != null)
+    {
+        <div class="col-12" style="margin-top: 10px;">
+            <div class="form-group row">
+                <div class="alert alert-danger text-center w-100" role="alert">
+                    @ViewBag.error
+                </div>
+            </div>
+        </div>
+        return;
+    }
+}
+
+@{
+    if (ViewBag.error == null)
+    {
+        <div class="card col-12" style="margin-top: 10px;">
+            <div class="card-header">
+                <h3>Thời gian thi Online: @No1Lib.Utils.ConvertTo.Int(Model["THOIGIAN"]) Phút - Số câu hỏi: @No1Lib.Utils.ConvertTo.Int(Model["SOCAU"]) câu</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <ul>
+                        <li><p class="card-text">Tất cả các đề thi Online trên trang đều có phương pháp làm bài, đáp án.</p></li>
+                        <li><p class="card-text">Đáp án và lời giải chi tiết sẽ được công bố ngay sau khi thành viên nộp bài thi.</p></li>
+                    </ul>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        @Html.Raw(No1Lib.Utils.ConvertTo.String(Model["NOIQUYTHI"]))
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col text-center">
+                        <h5>Bạn đã sẵn sàng chưa?</h5>
+                        <div class="btn btn-success" id="btnBatDau"
+                             data-chitietid="@Model["CHITIETID"]"
+                             data-dethiid="@Model["ID"]"
+                             data-loaidiem="@Model["LOAIDIEM"]"
+                             data-vongid="@Model["VONGID"]"
+                             data-ungvienid="@Model["UNGVIENID"]">Vào thi - Bắt đầu tính giờ!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+@Scripts.Render("~/bundles/jquery")
+<script>
+    $("#btnBatDau").click(function () {
+        //lưu lượt thi
+        let chiTietId = $(this).attr('data-chitietid');
+        let loaiDiem = $(this).attr('data-loaidiem');
+        let deThiId = $(this).attr('data-dethiid');
+        let vongId = $(this).attr('data-vongid');
+        let ungVienId = $(this).attr('data-ungvienid');
+        $.post("/KiemTra/LuuLuotThi", { chiTietId, deThiId, vongId, ungVienId, loaiDiem }, (success) => {
+            if (success.startsWith('ERR:')) {
+                //thông báo lỗi
+                alert(success);
+            }
+            else {
+                //redirect
+                window.location.href = "/KiemTra/LamBaiThi/" + success;
+            }
+        });
+    });
+</script>

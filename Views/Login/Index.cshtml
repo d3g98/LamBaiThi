@@ -1,0 +1,51 @@
+﻿@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_b4Layout.cshtml";
+}
+@Styles.Render("~/Login/css")
+<main class="login-form">
+    <div class="cotainer">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">ĐĂNG NHẬP HỆ THỐNG TUYỂN DỤNG - ĐÀO TẠO</div>
+                    <div class="card-body">
+
+                        @if (ViewBag.error != null)
+                        {
+                            <div class="form-group row">
+                                <div class="alert alert-danger text-center w-100" role="alert">
+                                    @ViewBag.error
+                                </div>
+                            </div>
+                        }
+
+                        <form action="/Login/KiemTraDangNhap" method="post">
+                            <div class="form-group row">
+                                <label for="email_address" class="col-md-4 col-form-label text-md-right">Tài khoản</label>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" name="username" value="@ViewBag.username" required autofocus>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="password" class="col-md-4 col-form-label text-md-right">Mật khẩu</label>
+                                <div class="col-md-6">
+                                    <input type="password" id="password" class="form-control" name="password" value="@ViewBag.password">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 offset-md-4 float-right">
+                                <button type="submit" class="btn btn-primary float-right">
+                                    Đăng nhập
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</main>

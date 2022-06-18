@@ -1,0 +1,63 @@
+﻿@model System.Data.DataTable
+@if (ViewBag.error != null)
+{
+    <div class="col-12" style="margin-top: 10px;">
+        <div class="form-group row">
+            <div class="alert alert-danger text-center w-100" role="alert">
+                @ViewBag.error
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    if (Model == null || Model.Rows.Count == 0)
+    {
+        <div class="col-12" style="margin-top: 10px;">
+            <div class="form-group row">
+                <div class="alert alert-danger text-center w-100" role="alert">
+                    Danh sách bài thi trống
+                </div>
+            </div>
+        </div>
+        return;
+    }
+
+    <hr />
+    <div class="row">
+        @foreach (System.Data.DataRow row in Model.Rows)
+        {
+            var name = row["NAME"];
+            var soCauHoi = No1Lib.Utils.ConvertTo.Int(row["SOCAU"]);
+            var thoiGian = row["THOIGIAN"];
+            <form action="/KiemTra/NoiQuy" method="post" class="col-lg-4 col-md-6 col-sm-12 card-bt-parent">
+                <input type="text" name="dethiid" value="@row["DDETHIID"]" hidden />
+                <input type="text" name="chitietid" value="@row["TDOTTUYENDUNGCHITIETID"]" hidden />
+                <input type="text" name="vongid" value="@row["DVONGTUYENDUNGID"]" hidden />
+                <input type="text" name="loaidiem" value="@row["LOAIDIEM"]" hidden />
+                <input type="text" name="ungvienid" value="@row["DUNGVIENID"]" hidden />
+                <div class="card baithi">
+                    <table>
+                        <tr>
+                            <td colspan="2"><h6>@name</h6></td>
+                        </tr>
+                        <tr>
+                            <td>Số câu hỏi:</td>
+                            <td>@soCauHoi</td>
+                        </tr>
+                        <tr>
+                            <td>Thời gian:</td>
+                            <td>@thoiGian phút</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="btn-lambai col-12">
+                    <button class="btn btn-success" type="submit">
+                        Làm bài
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+}

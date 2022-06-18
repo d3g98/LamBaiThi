@@ -1,0 +1,144 @@
+﻿.container {
+    width: 1080px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.navbar {
+    background-color: #D1C4E9;
+}
+
+.nav-item:hover {
+    background-color: #c4b0e8;
+}
+
+.nav-item a:hover {
+    color: white !important;
+}
+
+.nav-item a {
+    font-size: 20px;
+}
+
+.icon-home {
+    font-size: 28px !important;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.icon-home:hover {
+    color: white;
+}
+
+.baithi {
+    padding: 10px;
+    background-color: #fffcfa;
+}
+
+.btn-lambai {
+    display: none;
+    position: absolute;
+    top: 33%;
+    left: 33%;
+}
+
+.card-bt-parent:hover .btn-lambai {
+    display: unset;
+}
+
+.card-bt-parent:hover .baithi {
+    opacity: 0.5;
+}
+
+.headerBaiLam {
+    background-color: cornflowerblue;
+    color: white;
+}
+
+.tongHopBailam {
+    width: 100%;
+    background-color: darkorange;
+    font-size: 18px;
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.tgConLai, .soCauDaLam {
+    float: right;
+    font-size: 26px;
+}
+
+.itemChonDapAn {
+    margin: 5px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    float: left;
+    background-color: #d9d9d9;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 35px;
+    font-weight: bold;
+    color: black;
+    font-size: 20px;
+}
+
+.itemChonDapAn:hover {
+    color: white;
+}
+
+.itemActive, .itemWrong {
+    color: white;
+}
+
+.itemActive {
+    background-color: cornflowerblue;
+}
+
+.itemWrong {
+    background-color: #a4c263;
+}
+
+.table tbody tr:hover {
+    cursor: pointer;
+}
+
+.cirlce {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #66bdff;
+    width: 180px;
+    height: 180px;
+    text-align: center;
+}
+
+.diem-content {
+    margin-top: 30px;
+    color: darkorange;
+}
+
+.sum-result span {
+    background: #f0efef;
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    margin-top: -4px;
+    margin-right: 2px;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 1px solid #ccc;
+}
+
+span.aw_correct {
+    border: 1px solid #819d46;
+    background: #a4c263;
+}
+
+span.aw_not_correct {
+    background-color: darkorange;
+    border: 1px solid #c64c1d;
+}

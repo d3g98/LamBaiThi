@@ -1,0 +1,57 @@
+﻿@model System.Data.DataTable
+@{
+    ViewBag.Title = "Lịch sử";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    if (Model != null && Model.Rows.Count > 0)
+    {
+        <table class="table table-bordered table-sm table-hover tblKetQua" style="margin-top: 10px">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Ngày thi</th>
+                    <th>Phần thi</th>
+                    <th>Kết quả</th>
+                    <th>Điểm</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    foreach (System.Data.DataRow row in Model.Rows)
+                    {
+                        <tr data-id="@row["ID"]">
+                            <td>@i</td>
+                            <td>@row["NGAY"]</td>
+                            <td>@row["NAME"]</td>
+                            <td>@No1Lib.Utils.ConvertTo.Int(row["SOCAUTRALOIDUNG"])/@No1Lib.Utils.ConvertTo.Int(row["SOCAU"])</td>
+                            <td>@row["DIEM"]</td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="col-12" style="margin-top: 10px;">
+            <div class="form-group row">
+                <div class="alert alert-danger text-center w-100" role="alert">
+                    Lịch sử bài thi trống
+                </div>
+            </div>
+        </div>
+    }
+}
+@Scripts.Render("~/bundles/jquery")
+<script>
+    $(document).ready(function () {
+        $(".tblKetQua").find("tr").click(function () {
+            let urlKetQua = "/KiemTra/KetQua/" + $(this).attr("data-id");
+            window.location.href = urlKetQua;
+        });
+    });
+</script>

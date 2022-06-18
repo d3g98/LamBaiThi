@@ -1,0 +1,93 @@
+﻿@{
+    string currentUrl = Request.Url.ToString();
+    bool homePage = !currentUrl.Contains("KiemTra") && !currentUrl.Contains("LichSu") && !currentUrl.Contains("DanhGia");
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Thuần Việt Soft</title>
+    @Styles.Render("~/Content/css")
+    @*<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <style>
+        mjx-container[display="block"] {
+            display: block;
+            margin: 1em 0;
+        }
+    </style>
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ['$', '$'],
+          ['\\(', '\\)']
+        ]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-chtml-full.js">
+    </script>*@
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light col-12">
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link @{ if (homePage) { <text>active</text> } }" href="/"><i class="icon-home fa fa-home"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @{ if (!homePage && currentUrl.Contains("KiemTra")) { <text>active</text> } }" href="/KiemTra">Kiểm tra online</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @{ if (!homePage && currentUrl.Contains("LichSu")) { <text>active</text> } }" href="/LichSu">Lịch sử kiểm tra</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @{ if (!homePage && currentUrl.Contains("DanhGia")) { <text>active</text> } }" href="/DanhGia">Đánh giá khóa học</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Login/Logout">Đăng xuất</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        @if (ViewBag.error != null)
+        {
+            <div class="col-12" style="margin-top: 10px;">
+                <div class="form-group row">
+                    <div class="alert alert-danger text-center w-100" role="alert">
+                        @ViewBag.error
+                    </div>
+                </div>
+            </div>
+        }
+
+        @RenderBody()
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <style>
+        mjx-container[jax="CHTML"][display="true"] {
+            display: contents !important;
+            margin: 1em 0;
+        }
+    </style>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.0/es5/tex-chtml-full.js">
+    </script>
+</body>
+</html>

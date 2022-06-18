@@ -1,0 +1,180 @@
+﻿@{
+    ViewBag.Title = "LamBaiThi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    //tham số
+    string id = ViewBag.id;
+    string deThiId = ViewBag.deThiId;
+    int thoiGian = ViewBag.thoiGian ?? 0;
+    int tgConLai = ViewBag.tgConLai ?? 0;
+    int soCauHoi = ViewBag.soCau ?? 0;
+    //bảng dữ liệu
+    System.Data.DataTable dtCauHoi = ViewBag.CauHoi;
+    System.Data.DataTable dtDapAn = ViewBag.DapAn;
+}
+<div style="padding: 5px 0px;">
+    <div class="col-lg-9 col-md-8 col-sm-12 p-0 float-lg-left float-md-left float-sm-right">
+        <div class="card w-100">
+            <div class="card-header headerBaiLam">
+                <h5>Thời gian thi Online: <span style="color: orange">@thoiGian phút</span>. Số câu hỏi: <span style="color: orange">@soCauHoi câu</span></h5>
+            </div>
+            @{
+                Html.RenderAction("RenderCardBodyBailam", new { dtCauHoi = dtCauHoi, dtDapAn = dtDapAn, ketThuc = false, error = ViewBag.error });
+            }
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-12 p-0 float-lg-right float-md-right float-sm-left" style="padding-left: 10px !important;">
+        <div class="tongHopBailam">
+            <table class="w-100">
+                <tr><td>Thời gian còn:</td><td class="tgConLai">@tgConLai</td></tr>
+                <tr><td>Đã làm:</td><td class="soCauDaLam"><span id="soCauDaLam">0</span><span>/@soCauHoi</span></td></tr>
+            </table>
+        </div>
+        <div class="card w-100" style="margin-top: 20px;">
+            <div class="card-header">
+                <h5>Câu hỏi</h5>
+            </div>
+            <div class="card-body tongHopCauHoi">
+                @{
+                    if (dtCauHoi != null && dtCauHoi.Rows.Count > 0)
+                    {
+                        int dem = 1;
+                        foreach (System.Data.DataRow row in dtCauHoi.Rows)
+                        {
+                            <div class="itemChonDapAn" data-id="@row["ID"]">
+                                @{ if (dem < 10)
+                                    {<text>0</text>}<text>@dem</text>}
+                            </div>
+                            dem++;
+                        }
+                    }
+                }
+            </div>
+            @{
+                if (ViewBag.error == null)
+                {
+                    <div class="row" style="justify-content: center; margin-bottom: 10px;">
+                        <div class="btn btn-success btnNopBai">Nộp bài thi</div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận nộp bài</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn nộp bài thi không?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success btnDongYNopBai">Đồng ý</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/bundles/jquery")
+<script>
+    let urlKetQua = "/KiemTra/KetQua/@id";
+    function formartDemNguoc(demNguoc) {
+        if (demNguoc < 0) demNguoc = 0;
+        let valStr = '';
+        let temp = parseInt(demNguoc / 60);
+        valStr = (temp < 10 ? '0' : '') + temp + ":";
+        temp = demNguoc - temp * 60;
+        valStr += (temp < 10 ? '0' : '') + temp;
+        return valStr;
+    }
+
+    function ActiveCauHoiDaLam() {
+        let dem = 0;
+        $('.tongHopCauHoi').find(".itemChonDapAn").each(function (i, e) {
+            let id = $(e).attr("data-id");
+            let chon = $(".cauHoiBL[data-id='" + id + "']").find(".itemChonDapAn").hasClass("itemActive");
+            if (chon) $(e).addClass("itemActive");
+            else $(e).removeClass("itemActive");
+            if (chon) dem++;
+        });
+        $('#soCauDaLam').text(dem);
+    }
+
+    function ketThucBaiThi(demNguocInterval) {
+        clearInterval(demNguocInterval);
+        //chuyển về trang kết quả là được
+        window.location.href = urlKetQua;
+    }
+
+    //định dạng thời gian
+    $('.tgConLai').text(formartDemNguoc(@tgConLai));
+
+    $(document).ready(function () {
+        $('html, body').css("overflow", "hidden");
+        $('.tblChiTiet').css("overflow-y", "scroll");
+        let demNguoc = @tgConLai;
+        //đặt bộ đếm thời gian
+        let demNguocInterval;
+
+        if ("@ViewBag.error" == "") {
+            demNguocInterval = setInterval(function () {
+                demNguoc--;
+                $('.tgConLai').text(formartDemNguoc(demNguoc));
+                if (demNguoc < 0) {
+                    ketThucBaiThi(demNguocInterval);
+                }
+            }, 1000);
+        }
+
+        ActiveCauHoiDaLam();
+
+        $('.itemChonDapAn').click(function () {
+            let jqClicked = $(this);
+            //lưu dữ liệu trước, xong mới thay đổi giao diện
+            let url = "/KiemTra/LuuCauTraLoi/@id?deThiId=@deThiId&cauHoiId=" + jqClicked.closest('.cauHoiBL').attr("data-id") + "&traLoiId="
+                + jqClicked.closest(".row").attr("data-id") + "&active=" + (jqClicked.hasClass("itemActive") ? "0" : "30");
+            $.post(url,
+                function (dataSuccess) {
+                    if (dataSuccess.length > 0) {
+                        alert(dataSuccess);
+                    }
+                    else {
+                        let nhieuDapAn = parseInt(jqClicked.closest('.cauHoiBL').attr("data-nhieuCauTraLoi"));
+                        if (jqClicked.hasClass("itemActive")) {
+                            jqClicked.removeClass("itemActive");
+                        }
+                        else {
+                            if (!nhieuDapAn) jqClicked.closest('.cauHoiBL').find('.itemChonDapAn').removeClass("itemActive");
+                            jqClicked.addClass("itemActive");
+                        }
+                        ActiveCauHoiDaLam();
+                    }
+                }).fail(function () {
+                    alert("Có lỗi trong quá trình lưu câu trả lời, vui lòng thử lại");
+                });
+        });
+
+        $('.tongHopCauHoi').find(".itemChonDapAn").click(function () {
+            $('.tblChiTiet').animate({ scrollTop: $(".cauHoiBL[data-id='" + $(this).attr("data-id") + "']").offset().top }, 500);
+        });
+
+        $(".btnNopBai").click(function () {
+            //hiển thị modal xác nhận
+            $('#myModal').modal('show');
+        });
+
+        $(".btnDongYNopBai").click(function () {
+            //hiển thị modal xác nhận
+            ketThucBaiThi(demNguocInterval);
+        });
+
+        let height = window.innerHeight - 130;
+        $(".tblChiTiet").css("max-height", height + "px");
+    });
+</script>
