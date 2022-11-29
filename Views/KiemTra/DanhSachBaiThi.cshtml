@@ -30,6 +30,7 @@ else
             var name = row["NAME"];
             var soCauHoi = No1Lib.Utils.ConvertTo.Int(row["SOCAU"]);
             var thoiGian = row["THOIGIAN"];
+            string error = row["ERROR"].ToString();
             <form action="/KiemTra/NoiQuy" method="post" class="col-lg-4 col-md-6 col-sm-12 card-bt-parent">
                 <input type="text" name="dethiid" value="@row["DDETHIID"]" hidden />
                 <input type="text" name="chitietid" value="@row["TDOTTUYENDUNGCHITIETID"]" hidden />
@@ -50,13 +51,24 @@ else
                             <td>@thoiGian phút</td>
                         </tr>
                     </table>
+                    @{
+                        if (error.Length > 0)
+                        {
+                            <div class="alert alert-danger" role="alert">@error</div>
+                        }
+                    }
                 </div>
 
-                <div class="btn-lambai col-12">
-                    <button class="btn btn-success" type="submit">
-                        Làm bài
-                    </button>
-                </div>
+                @{
+                    if (error.Length == 0)
+                    {
+                        <div class="btn-lambai col-12">
+                            <button class="btn btn-success" type="submit">
+                                Làm bài
+                            </button>
+                        </div>
+                    }
+                }
             </form>
         }
     </div>

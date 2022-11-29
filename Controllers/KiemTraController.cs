@@ -41,8 +41,10 @@ namespace TVS_DT_TD.Controllers
                     string DUNGVIENID = ConvertTo.String(rUser["ID"]);
                     FbCommand cmd = db.GetCommand("");
                     cmd.Parameters.Add("@DUNGVIENID", FbDbType.VarChar).Value = DUNGVIENID;
-                    cmd.CommandText = @"SELECT TDOTTUYENDUNGTHIMAY.ID AS TDOTTUYENDUNGTHIMAYID, TDOTTUYENDUNGCHITIET.ID AS TDOTTUYENDUNGCHITIETID, TDOTTUYENDUNGTHIMAY.DDETHIID, DDETHI.NAME, DDETHI.SOCAU, DDETHI.THOIGIAN,
-                    TDOTTUYENDUNGCHITIET.DVONGTUYENDUNGID, TDOTTUYENDUNGTHIMAY.LOAIDIEM, TDOTTUYENDUNGCHITIET.DUNGVIENID
+                    cmd.Parameters.Add("@DDETHIID", FbDbType.VarChar).Value = "";
+                    cmd.CommandText = @"SELECT TDOTTUYENDUNGTHIMAY.ID AS TDOTTUYENDUNGTHIMAYID, TDOTTUYENDUNGCHITIET.ID AS TDOTTUYENDUNGCHITIETID,
+                    TDOTTUYENDUNGTHIMAY.DDETHIID, DDETHI.NAME, DDETHI.SOCAU, DDETHI.THOIGIAN, DDETHI.DNHOMCAUHOIID, DDETHI.CACHCHON,
+                    TDOTTUYENDUNGCHITIET.DVONGTUYENDUNGID, TDOTTUYENDUNGTHIMAY.LOAIDIEM, TDOTTUYENDUNGCHITIET.DUNGVIENID, '' AS ERROR
                     FROM TDOTTUYENDUNGCHITIET INNER JOIN TDOTTUYENDUNGTHIMAY ON TDOTTUYENDUNGCHITIET.TDOTTUYENDUNGID = TDOTTUYENDUNGTHIMAY.TDOTTUYENDUNGID AND LANCUOI = 30
                     INNER JOIN DDETHI ON TDOTTUYENDUNGTHIMAY.DDETHIID = DDETHI.ID
                     AND((TDOTTUYENDUNGCHITIET.DVONGTUYENDUNGID = TDOTTUYENDUNGTHIMAY.DVONGTUYENDUNGID) OR(TDOTTUYENDUNGTHIMAY.DVONGTUYENDUNGID =
@@ -53,14 +55,77 @@ namespace TVS_DT_TD.Controllers
                     AND TDOTTUYENDUNGTHIMAYCT.TDOTTUYENDUNGID = TDOTTUYENDUNGTHIMAY.TDOTTUYENDUNGID
                     AND TDOTTUYENDUNGTHIMAYCT.DVONGTUYENDUNGID = TDOTTUYENDUNGTHIMAY.DVONGTUYENDUNGID)
                     AND DUNGVIENID = @DUNGVIENID ORDER BY DDETHI.NAME";
-                    DataTable dt = db.GetTable(cmd);
+                    DataTable dtDeThi = db.GetTable(cmd);
                     //Lấy tiêu đề vòng thi
                     DataTable dtVongTuyenDung = db.GetTable("SELECT ID, PARENTID, COTHIMON1, TENMONTHI1, COTHIMON2, TENMONTHI2, COTHIMON3, TENMONTHI3 FROM DVONGTUYENDUNG");
-                    foreach (DataRow row in dt.Rows)
+
+                    //Kiểm tra đề thi hợp lệ
+                    foreach (DataRow rowDeThi in dtDeThi.Rows)
                     {
-                        row["NAME"] = LayTenMonThi(dtVongTuyenDung, ConvertTo.String(row["DVONGTUYENDUNGID"]), ConvertTo.Int(row["LOAIDIEM"]));
+                        string errorDeThi = "";
+                        rowDeThi["NAME"] = LayTenMonThi(dtVongTuyenDung, ConvertTo.String(rowDeThi["DVONGTUYENDUNGID"]), ConvertTo.Int(rowDeThi["LOAIDIEM"]));
+
+                        int cachChonCauHoi = ConvertTo.Int(rowDeThi["CACHCHON"]);
+                        //Kiểm tra dữ liệu đề thi có đủ số lượng yêu cầu không
+                        if (cachChonCauHoi == (int)CachChonCauHoi.TuDong)
+                        {
+                            //Lấy chi tiết đề thi
+                            cmd = db.GetCommand("SELECT * FROM DDETHICHITIET WHERE DDETHIID = @DDETHIID");
+                            cmd.Parameters.Add("@DDETHIID", FbDbType.VarChar).Value = ConvertTo.String(rowDeThi["DDETHIID"]);
+                            DataTable dtChiTiet = db.GetTable(cmd);
+
+                            if (dtChiTiet != null && dtChiTiet.Rows.Count > 0)
+                            {
+                                dtChiTiet.DefaultView.Sort = "TIILEPHANTRAM";
+                                dtChiTiet = dtChiTiet.DefaultView.ToTable();
+
+                                int sum = 0, i = 0;
+                                cmd = db.GetCommand("SELECT ID, (SELECT COUNT(*) FROM DCAUHOI WHERE DLOAICAUHOIID = DLOAICAUHOI.ID AND DNHOMCAUHOIID = @DNHOMCAUHOIID) AS TONG FROM DLOAICAUHOI");
+                                cmd.Parameters.Add("@DNHOMCAUHOIID", FbDbType.VarChar).Value = ConvertTo.String(rowDeThi["DNHOMCAUHOIID"]);
+                                DataTable dtLoai = db.GetTable(cmd);
+                                foreach (DataRow rDeThiChiTiet in dtChiTiet.Rows)
+                                {
+                                    //Tự động
+                                    string DLOAICAUHOIID = ConvertTo.String(rDeThiChiTiet["DLOAICAUHOIID"]);
+                                    decimal TIILEPHANTRAM = ConvertTo.Decimal(rDeThiChiTiet["TIILEPHANTRAM"]);
+                                    //tính toán xem tỉ lệ có đủ soạn câu hỏi hay không
+                                    cmd = db.GetCommand("SELECT * FROM DLOAICAUHOI WHERE ID = @DLOAICAUHOIID");
+                                    cmd.Parameters.Add("@DLOAICAUHOIID", FbDbType.VarChar).Value = DLOAICAUHOIID;
+                                    DataRow loaiRow =db.GetFirstRow(cmd);
+                                    if (TIILEPHANTRAM > 0)
+                                    {
+                                        DataRow[] rows = dtLoai.Select("ID='" + DLOAICAUHOIID + "'");
+                                        if (rows.Length == 0)
+                                        {
+                                            errorDeThi = "Danh sách câu hỏi thuộc \"" + loaiRow["NAME"] + "\" trống";
+                                        }
+                                        else
+                                        {
+                                            int soCau = ConvertTo.Int(rowDeThi["SOCAU"]);
+                                            int min = (int)Math.Floor(soCau * TIILEPHANTRAM / 100);
+                                            if (min == 0) min = 1;
+                                            if (min == 0 || min > soCau)
+                                            {
+                                                errorDeThi = "Tỉ lệ phần trăm \"" + loaiRow["NAME"] + "\" không hợp lệ";
+                                            }
+                                            if (i == dtChiTiet.Rows.Count - 1)
+                                            {
+                                                min = ConvertTo.Int(soCau) - sum;
+                                            }
+                                            if (min > ConvertTo.Int(rows[0]["TONG"]))
+                                            {
+                                                errorDeThi = "Danh sách câu hỏi thuộc \"" + loaiRow["NAME"] + "\" không đủ số lượng yêu cầu " + ConvertTo.Int(rows[0]["TONG"]) + "/" + min;
+                                            }
+                                            sum += min;
+                                        }
+                                    }
+                                    i++;
+                                }
+                            }
+                        }
+                        rowDeThi["ERROR"] = errorDeThi;
                     }
-                    return PartialView(dt);
+                    return PartialView(dtDeThi);
                 }
                 catch (Exception ex)
                 {

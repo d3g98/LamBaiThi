@@ -16,9 +16,29 @@ namespace TVS_DT_TD.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            ViewBag.username = "UV0077";
+            ViewBag.username = "";
             ViewBag.password = "";
+
+            string ip = GetIPAddress();
+
             return View();
+        }
+        protected string GetIPAddress()
+        {
+            System.Web.HttpContext context = System.Web.HttpContext.Current;
+            string ipAddress = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+            if (!string.IsNullOrEmpty(ipAddress))
+            {
+                string[] addresses = ipAddress.Split(',');
+                if (addresses.Length != 0)
+                {
+                    return addresses[0];
+                }
+            }
+
+            return context.Request.ServerVariables["REMOTE_ADDR"];
+
         }
 
         [HttpPost]
@@ -36,8 +56,7 @@ namespace TVS_DT_TD.Controllers
                 {
                     try
                     {
-                        FbCommand cmd = db.GetCommand("");
-                        cmd.CommandText = "SELECT ID, NAME FROM DUNGVIEN WHERE COALESCE(CODE, '') = @CODE AND COALESCE(MATKHAU, '') = @MATKHAU";
+                        FbCommand cmd = db.GetCommand("SELECT ID, NAME FROM DUNGVIEN WHERE COALESCE(CODE, '') = @CODE AND COALESCE(MATKHAU, '') = @MATKHAU");
                         cmd.Parameters.Add("@CODE", FbDbType.VarChar).Value = username.Trim();
                         cmd.Parameters.Add("@MATKHAU", FbDbType.VarChar).Value = password.Trim();
                         DataRow rUser = db.GetFirstRow(cmd);
